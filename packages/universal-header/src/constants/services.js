@@ -23,12 +23,20 @@ export const servicePathnames = {
   [serviceKeys.search]: '/search',
 }
 
-export const serviceOrder = [
-  serviceKeys.search,
-  serviceKeys.bookmarks,
-  serviceKeys.support,
-  serviceKeys.newsLetter,
-]
+export const serviceOrder = {
+  mobile: [
+    serviceKeys.search,
+    serviceKeys.bookmarks,
+    serviceKeys.support,
+    serviceKeys.newsLetter,
+  ],
+  desktop: [
+    serviceKeys.support,
+    serviceKeys.newsLetter,
+    serviceKeys.search,
+    serviceKeys.bookmarks,
+  ],
+}
 
 export default {
   serviceKeys,

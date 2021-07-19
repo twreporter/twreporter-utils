@@ -64,14 +64,16 @@ class Header extends React.PureComponent {
   static propTypes = {
     pathname: PropTypes.string,
     channels: Channels.propTypes.data,
+    services: PropTypes.array,
   }
   static defaultProps = {
     pathname: '',
     channels: Channels.defaultProps.data,
+    services: [],
   }
 
   render() {
-    const { pathname, channels } = this.props
+    const { pathname, channels, services } = this.props
 
     const channelJSX = <Channels currentPathname={pathname} data={channels} />
     return (
@@ -88,7 +90,7 @@ class Header extends React.PureComponent {
                   >
                     <Logo />
                   </Link>
-                  <Icons />
+                  <Icons services={services} />
                 </TopRowContent>
               </TopRow>
             )

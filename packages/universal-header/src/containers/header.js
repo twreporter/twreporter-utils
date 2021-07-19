@@ -20,9 +20,11 @@ import { connect } from 'react-redux'
 import mq from '@twreporter/core/lib/utils/media-query'
 // lodash
 import get from 'lodash/get'
+import map from 'lodash/map'
 
 const _ = {
   get,
+  map,
 }
 
 const MobileOnly = styled.div`
@@ -98,7 +100,8 @@ class Container extends React.PureComponent {
       releaseBranch
     )
 
-    const serviceProps = serviceConst.serviceOrder.map(key => {
+    const desktopServiceProps = _.map(serviceConst.serviceOrder.desktop, key => ({ key }));
+    const mobileServiceProps = _.map(serviceConst.serviceOrder.mobile, (key) => {
       return {
         key,
         label: serviceConst.serviceLabels[key],
@@ -108,8 +111,10 @@ class Container extends React.PureComponent {
     })
 
     if (isAuthed) {
+      const bookmarkKey = serviceConst.serviceKeys.bookmarks
       const logoutKey = serviceConst.serviceKeys.logout
-      serviceProps.unshift({
+      desktopServiceProps.push({ key: logoutKey })
+      mobileServiceProps.unshift({
         key: logoutKey,
         label: serviceConst.serviceLabels[logoutKey],
         link: serviceLinks[logoutKey],
@@ -117,7 +122,8 @@ class Container extends React.PureComponent {
       })
     } else {
       const loginKey = serviceConst.serviceKeys.login
-      serviceProps.unshift({
+      desktopServiceProps.push({ key: loginKey })
+      mobileServiceProps.unshift({
         key: loginKey,
         label: serviceConst.serviceLabels[loginKey],
         link: serviceLinks[loginKey],
@@ -125,11 +131,11 @@ class Container extends React.PureComponent {
       })
     }
 
-    return serviceProps
+    return { desktop: desktopServiceProps, mobile: mobileServiceProps }
   }
 
   __prepareChannelProps(releaseBranch, isLinkExternal) {
-    const channelProps = channelConst.channelOrder.map(key => {
+    const channelProps = _.map(channelConst.channelOrder, (key) => {
       return {
         key,
         label: channelConst.channelLabels[key],
@@ -145,7 +151,7 @@ class Container extends React.PureComponent {
   __prepareCategoriesProps(releaseBranch, isLinkExternal, channelProps) {
     channelProps[
       channelProps.length - 1
-    ].dropDownMenu = categoryConst.categoryOrder.map(key => {
+    ].dropDownMenu = _.map(categoryConst.categoryOrder, (key) => {
       return {
         key,
         label: categoryConst.categoryLabels[key],
@@ -179,7 +185,7 @@ class Container extends React.PureComponent {
       releaseBranch,
       isLinkExternal
     )
-    const mobileMenu = mergeTwoArraysInOrder(channelProps, serviceProps)
+    const mobileMenu = mergeTwoArraysInOrder(channelProps, serviceProps.mobile)
 
     this.__prepareCategoriesProps(releaseBranch, isLinkExternal, channelProps)
 
@@ -189,7 +195,7 @@ class Container extends React.PureComponent {
           <MobileHeader menu={mobileMenu} {...passThrough} />
         </MobileOnly>
         <NonMobileOnly>
-          <Header channels={channelProps} {...passThrough} />
+          <Header channels={channelProps} services={serviceProps.desktop} {...passThrough} />
         </NonMobileOnly>
       </HeaderContext.Provider>
     )

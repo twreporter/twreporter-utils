@@ -1,5 +1,6 @@
 import HeaderContext from '../contexts/header-context'
 import Link from './customized-link'
+import PropTypes from 'prop-types'
 import React from 'react'
 import SearchBox from './search-box'
 import fonts from '../constants/fonts'
@@ -10,6 +11,12 @@ import styled from 'styled-components'
 import themeUtils from '../utils/theme'
 // @twreporter
 import mq from '@twreporter/core/lib/utils/media-query'
+// lodash
+import map from 'lodash/map'
+
+const _ = {
+  map,
+}
 
 const styles = {
   iconContainerSize: 3, // em
@@ -97,6 +104,14 @@ const HideOnDesktop = styled(IconContainer)`
 `
 
 class Icons extends React.PureComponent {
+  static propTypes = {
+    services: PropTypes.array,
+  }
+
+  static defaultProps = {
+    services: [],
+  }
+
   constructor(props) {
     super(props)
     this.state = {
@@ -133,38 +148,52 @@ class Icons extends React.PureComponent {
     window.location = linkUtils.getLoginLink(releaseBranch).to + '?' + query
   }
 
-  render() {
+  _prepareIconJsx(service) {
     const { isSearchOpened } = this.state
-    const Member = (
-      <HeaderContext.Consumer>
-        {({ isAuthed, releaseBranch, theme }) => {
-          const LogInIcon = themeUtils.selectServiceIcons(theme).member
-          const LogOutIcon = themeUtils.selectServiceIcons(theme).logout
-
-          return (
-            <a
-              onClick={e => {
-                this._handleLogIconClick(e, isAuthed, releaseBranch)
-              }}
-            >
-              {isAuthed ? (
-                <React.Fragment>
-                  <LogOutIcon />
-                  <span>{serviceConst.serviceLabels.logout}</span>
-                </React.Fragment>
-              ) : (
+    const Login = (
+      <IconContainer isSearchOpened={isSearchOpened}>
+        <HeaderContext.Consumer>
+          {({ releaseBranch, theme }) => {
+            const LogInIcon = themeUtils.selectServiceIcons(theme).member
+            return (
+              <a
+                onClick={e => {
+                  this._handleLogIconClick(e, false, releaseBranch)
+                }}
+              >
                 <React.Fragment>
                   <LogInIcon />
                   <span>{serviceConst.serviceLabels.login}</span>
                 </React.Fragment>
-              )}
-            </a>
-          )
-        }}
-      </HeaderContext.Consumer>
+              </a>
+            )
+          }}
+        </HeaderContext.Consumer>
+      </IconContainer>
     )
-    return (
-      <IconsContainer>
+    const Logout = (
+      <IconContainer isSearchOpened={isSearchOpened}>
+        <HeaderContext.Consumer>
+          {({ releaseBranch, theme }) => {
+            const LogOutIcon = themeUtils.selectServiceIcons(theme).logout
+            return (
+              <a
+                onClick={e => {
+                  this._handleLogIconClick(e, true, releaseBranch)
+                }}
+              >
+                <React.Fragment>
+                  <LogOutIcon />
+                  <span>{serviceConst.serviceLabels.logout}</span>
+                </React.Fragment>
+              </a>
+            )
+          }}
+        </HeaderContext.Consumer>
+      </IconContainer>
+    )
+    const Search = (
+      <React.Fragment>
         <DisplayOnDesktop
           onClick={this._handleClickSearch}
           isSearchOpened={isSearchOpened}
@@ -198,24 +227,49 @@ class Icons extends React.PureComponent {
             }}
           </HeaderContext.Consumer>
         </HideOnDesktop>
-        <IconContainer isSearchOpened={isSearchOpened}>
-          <HeaderContext.Consumer>
-            {({ releaseBranch, isLinkExternal, theme }) => {
-              const BookmarkIcon = themeUtils.selectServiceIcons(theme).bookmark
-              const link = linkUtils.getBookmarksLink(
-                isLinkExternal,
-                releaseBranch
-              )
-              return (
-                <Link {...link}>
-                  <BookmarkIcon />
-                  <span>{serviceConst.serviceLabels.bookmarks}</span>
-                </Link>
-              )
-            }}
-          </HeaderContext.Consumer>
-        </IconContainer>
-        <IconContainer isSearchOpened={isSearchOpened}>{Member}</IconContainer>
+      </React.Fragment>
+    )
+    const Bookmark = (
+      <IconContainer isSearchOpened={isSearchOpened}>
+        <HeaderContext.Consumer>
+          {({ releaseBranch, isLinkExternal, theme }) => {
+            const BookmarkIcon = themeUtils.selectServiceIcons(theme).bookmark
+            const link = linkUtils.getBookmarksLink(
+              isLinkExternal,
+              releaseBranch
+            )
+            return (
+              <Link {...link}>
+                <BookmarkIcon />
+                <span>{serviceConst.serviceLabels.bookmarks}</span>
+              </Link>
+            )
+          }}
+        </HeaderContext.Consumer>
+      </IconContainer>
+
+    )
+    switch(service) {
+      case 'login':
+        return Login
+      case 'logout':
+        return Logout
+      case 'search':
+        return Search
+      case 'bookmarks':
+        return Bookmark
+      case 'newsletter':
+      case 'support':
+      default:
+        return null;
+    }
+  }
+
+  render() {
+    const { services } = this.props;
+    return (
+      <IconsContainer>
+        { _.map(services, service => this._prepareIconJsx(service.key)) }
       </IconsContainer>
     )
   }
